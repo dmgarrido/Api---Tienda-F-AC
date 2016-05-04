@@ -1,10 +1,8 @@
 package controller;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,55 +10,40 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import data.Repository;
 import model.Libro;
 
 @RestController
-public class LibrosController implements ProductosManager<Libro>{
+public class LibrosController {
 	
-	private List<Libro> libros = Repository.lista_libros;
+	private ProductosManagerImplLibros librosManager;
+	
+	public LibrosController() {
+		librosManager = new ProductosManagerImplLibros();
+	}
 
 	//
 	//CONSULTA DE DATOS
 	//
 	@RequestMapping(value = "/libros", method = RequestMethod.GET)
 	public List<Libro> getAllProductos() {
-		return libros;
+		
+		return librosManager.getAllProductos();
+		
 	}
-
+				
 	@RequestMapping(value = "/libros/", method = RequestMethod.GET)
 	public List<Libro> getProductosByParams(@RequestParam(value="titulo", required=false, defaultValue="") String titulo, 
 											@RequestParam(value="autor", required=false, defaultValue="") String autor) {
-		List<Libro> resultado = new ArrayList<Libro>();
 		
-		for(Libro libro : libros) {
-			if(!titulo.equals("")) {
-				if(!autor.equals("")) {
-					if(libro.getTitulo().equals(titulo) && libro.getAutor().equals(autor)) {
-						resultado.add(libro);
-					}
-				} else {
-					if(libro.getTitulo().equals(titulo)) {
-						resultado.add(libro);
-					}
-				}
-			} else {
-				if (libro.getAutor().equals(autor)) {
-					resultado.add(libro);
-				}
-			}
-		}
-		return resultado;
+		return librosManager.getProductosByParams(titulo, autor);
+
 	}
 
 	@RequestMapping(value="/libros/{id}", method=RequestMethod.GET)
 	public Libro getProductoById(@PathVariable Integer id) {
-		for(Libro libro : libros) {
-			if(libro.getId() == id) {
-				return libro;
-			}
-		}
-		return null;
+		
+		return librosManager.getProductoById(id);
+		
 	}
 
 	
@@ -69,8 +52,9 @@ public class LibrosController implements ProductosManager<Libro>{
 	//
 	@RequestMapping(value="/libros", method = RequestMethod.POST)
 	public void addProducto(@RequestBody Integer id, String titulo, String autor, Double precio) {
-		Libro libro = new Libro(id, titulo, autor, precio);
-		libros.add(libro);
+		
+		librosManager.addProducto(id, titulo, autor, precio);
+
 	}
 
 	
@@ -79,18 +63,16 @@ public class LibrosController implements ProductosManager<Libro>{
 	//
 	@RequestMapping(value="/libros", method=RequestMethod.PUT)
 	public void updatePrecioAll(@RequestBody Double precio) {
-		for(Libro libro : libros) {
-			libro.setPrecio(precio);
-		}		
+		
+		librosManager.updatePrecioAll(precio);
+	
 	}
 
 	@RequestMapping(value="/libros/{id}", method=RequestMethod.PUT)
 	public void updatePrecioById(@PathVariable Integer id, @RequestBody Double precio) {
-		for(Libro libro : libros) {
-			if(libro.getId() == id) {
-				libro.setPrecio(precio);
-			}			
-		}		
+		
+		librosManager.updatePrecioById(id, precio);
+	
 	}
 
 	
@@ -99,20 +81,14 @@ public class LibrosController implements ProductosManager<Libro>{
 	//
 	@RequestMapping(value="/libros", method=RequestMethod.DELETE)
 	public void deleteProductosAll() {
-		libros.clear();
+		
+		librosManager.deleteProductosAll();
 	}
 
 	@RequestMapping(value="/libros/{id}", method=RequestMethod.DELETE)
 	public void deleteProductoById(@PathVariable Integer id) {
 		
-		Iterator<Libro> librosIterator = libros.iterator();
-		
-		while(librosIterator.hasNext()) {
-			Libro libro = librosIterator.next();
-			if(libro.getId() == id) {
-				librosIterator.remove();
-			}
-		}
+		librosManager.deleteProductoById(id);
 
 	}
 
